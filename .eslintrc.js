@@ -4,7 +4,8 @@ module.exports = {
         "es2021": true
     },
     "extends": [
-        "airbnb-base"
+        "airbnb-base",
+        "plugin:prettier/recommended",
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -12,8 +13,10 @@ module.exports = {
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "prettier"
     ],
     "rules": {
+        'prettier/prettier': ['error', { singleQuote: true }],
     }
 };
