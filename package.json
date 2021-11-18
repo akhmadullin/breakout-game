@@ -1,6 +1,11 @@
 {
   "name": "breakout-game",
   "packageManager": "yarn@3.0.1",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
   "devDependencies": {
     "parcel": "^2.0.1"
   }
