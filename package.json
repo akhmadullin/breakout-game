@@ -1,4 +1,7 @@
 {
   "name": "breakout-game",
-  "packageManager": "yarn@3.0.1"
+  "packageManager": "yarn@3.0.1",
+  "devDependencies": {
+    "parcel": "^2.0.1"
+  }
 }
