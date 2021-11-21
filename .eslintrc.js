@@ -9,7 +9,7 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
     },
-    plugins: ['@typescript-eslint', 'prettier'],
+    plugins: ['@typescript-eslint', 'import', 'prettier'],
     rules: {
         'prettier/prettier': ['error', { singleQuote: true }],
         'no-console': 'off',
@@ -17,6 +17,13 @@ module.exports = {
         'no-shadow': 'off',
         'no-unused-vars': 'off',
         'no-continue': 'off',
+        'import/extensions': [
+            'error',
+            'ignorePackages',
+            {
+                ts: 'never',
+            },
+        ],
         'max-len': [
             'error',
             120,
@@ -30,5 +37,10 @@ module.exports = {
                 ignorePattern: '<path([sS]*?)/>',
             },
         ],
+    },
+    settings: {
+        'import/resolver': {
+            typescript: {},
+        },
     },
 };
