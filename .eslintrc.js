@@ -14,6 +14,9 @@ module.exports = {
         'prettier/prettier': ['error', { singleQuote: true }],
         'no-console': 'off',
         'no-plusplus': 'off',
+        'no-shadow': 'off',
+        'no-unused-vars': 'off',
+        'no-continue': 'off',
         'max-len': [
             'error',
             120,
