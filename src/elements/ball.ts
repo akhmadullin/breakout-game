@@ -1,16 +1,26 @@
 import BaseMovableElement from './base-movable-element';
 import { Point, Color } from '../types';
 
+type BallOptions = {
+    x: number;
+    y: number;
+    deltaX: number;
+    deltaY: number;
+    color: Color;
+    radius: number;
+};
+
 class Ball extends BaseMovableElement {
-    private radius: number;
+    private delta: Point;
+
+    public radius: number;
 
     constructor(
         ctx: CanvasRenderingContext2D,
-        position: Point,
-        color: Color,
-        radius: number
+        { x, y, deltaX, deltaY, color, radius }: BallOptions
     ) {
-        super(ctx, position, color);
+        super(ctx, { x, y }, color);
+        this.delta = { x: deltaX, y: deltaY };
         this.radius = radius;
     }
 
@@ -28,8 +38,24 @@ class Ball extends BaseMovableElement {
         this.ctx.closePath();
     }
 
-    public getRadius(): number {
-        return this.radius;
+    public setDelta(delta: Point) {
+        this.delta = delta;
+    }
+
+    get deltaX(): number {
+        return this.delta.x;
+    }
+
+    get deltaY(): number {
+        return this.delta.y;
+    }
+
+    public invertDeltaX() {
+        this.delta.x = -this.delta.x;
+    }
+
+    public invertDeltaY() {
+        this.delta.y = -this.delta.y;
     }
 
     public move() {

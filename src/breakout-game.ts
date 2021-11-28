@@ -1,6 +1,7 @@
 import Ball from './elements/ball';
 import Paddle from './elements/paddle';
 import Brick, { BrickStatus } from './elements/brick';
+import Bricks from './elements/bricks';
 import ScoreBoard from './elements/score-board';
 import { blue, font } from './constants';
 
@@ -27,7 +28,7 @@ class BreakoutGame {
 
     private paddle: Paddle;
 
-    private bricks: Brick[][];
+    private bricks: Bricks;
 
     private score: ScoreBoard;
 
@@ -44,25 +45,23 @@ class BreakoutGame {
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
 
-        this.ball = new Ball(
-            ctx,
-            { x: ctx.canvas.width / 2, y: ctx.canvas.height - 30 },
-            blue,
-            10
-        );
-        this.ball.setDelta({ x: 2, y: -2 });
+        this.ball = new Ball(ctx, {
+            x: ctx.canvas.width / 2,
+            y: ctx.canvas.height - 30,
+            deltaX: 2,
+            deltaY: -2,
+            color: blue,
+            radius: 10,
+        });
 
-        this.paddle = new Paddle(
-            ctx,
-            {
-                x: (ctx.canvas.width - paddleWidth) / 2,
-                y: ctx.canvas.height - 10,
-            },
-            blue,
-            { width: paddleWidth, height: 10 }
-        );
-        this.paddle.setDelta({ x: 7, y: 0 });
-
+        this.paddle = new Paddle(ctx, {
+            x: (ctx.canvas.width - paddleWidth) / 2,
+            y: ctx.canvas.height - 10,
+            width: paddleWidth,
+            height: 10,
+            shift: 7,
+            color: blue,
+        });
         //
         const bricks: Brick[][] = [];
         for (let c = 0; c < brickColumnCount; c++) {
@@ -72,13 +71,16 @@ class BreakoutGame {
                     c * (brickWidth + brickPadding) + brickOffsetLeft;
                 const brickY =
                     r * (brickHeight + brickPadding) + brickOffsetTop;
-                bricks[c][r] = new Brick(ctx, { x: brickX, y: brickY }, blue, {
+                bricks[c][r] = new Brick(ctx, {
+                    x: brickX,
+                    y: brickY,
                     width: brickWidth,
                     height: brickHeight,
+                    color: blue,
                 });
             }
         }
-        this.bricks = bricks;
+        this.bricks = new Bricks(bricks);
         //
 
         this.score = new ScoreBoard(
@@ -131,37 +133,33 @@ class BreakoutGame {
 
         const mouseMoveHandler = (e: MouseEvent) => {
             const relativeX = e.clientX - this.ctx.canvas.offsetLeft;
-            if (relativeX > 0 && relativeX < this.ctx.canvas.width) {
-                this.paddle.setX(relativeX - paddleWidth / 2);
-            }
+            this.paddle.moveByMouse(relativeX);
         };
 
         document.addEventListener('mousemove', mouseMoveHandler);
     }
 
     private collisionDetection = () => {
-        for (let c = 0; c < brickColumnCount; c++) {
-            for (let r = 0; r < brickRowCount; r++) {
-                const brick = this.bricks[c][r];
+        const bricks = this.bricks.getItems();
+        for (let c = 0; c < bricks.length; c++) {
+            for (let r = 0; r < bricks[0].length; r++) {
+                const brick = bricks[c][r];
 
                 if (brick.getStatus() === BrickStatus.Broken) {
                     continue;
                 }
 
                 if (
-                    this.ball.getX() > brick.getX() &&
-                    this.ball.getX() < brick.getX() + brickWidth &&
-                    this.ball.getY() > brick.getY() &&
-                    this.ball.getY() < brick.getY() + brickHeight
+                    this.ball.x > brick.x &&
+                    this.ball.x < brick.x + brick.width &&
+                    this.ball.y > brick.y &&
+                    this.ball.y < brick.y + brick.height
                 ) {
                     this.ball.invertDeltaY();
                     brick.destroy();
                     this.score.increase();
 
-                    if (
-                        this.score.getValue() ===
-                        brickRowCount * brickColumnCount
-                    ) {
+                    if (this.score.getValue() === this.bricks.amount) {
                         this.status = GameStatus.Win;
                     }
                 }
@@ -174,23 +172,11 @@ class BreakoutGame {
             return;
         }
 
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.cleanCanvas();
 
         this.ball.draw();
         this.paddle.draw();
-        //
-        for (let c = 0; c < brickColumnCount; c++) {
-            for (let r = 0; r < brickRowCount; r++) {
-                const brick = this.bricks[c][r];
-
-                if (brick.getStatus() === BrickStatus.Broken) {
-                    continue;
-                }
-
-                brick.draw();
-            }
-        }
-        //
+        this.bricks.draw();
         this.score.draw();
         this.lives.draw();
 
@@ -210,24 +196,14 @@ class BreakoutGame {
 
         this.collisionDetection();
 
-        if (
-            this.ball.getX() + this.ball.getDeltaX() < this.ball.getRadius() ||
-            this.ball.getX() + this.ball.getDeltaX() >
-                this.ctx.canvas.width - this.ball.getRadius()
-        ) {
+        if (this.ballReachedLeft() || this.ballReachedRight()) {
             this.ball.invertDeltaX();
         }
 
-        if (this.ball.getY() + this.ball.getDeltaY() < this.ball.getRadius()) {
+        if (this.ballReachedTop()) {
             this.ball.invertDeltaY();
-        } else if (
-            this.ball.getY() + this.ball.getDeltaY() >
-            this.ctx.canvas.height - this.ball.getRadius()
-        ) {
-            if (
-                this.ball.getX() > this.paddle.getX() &&
-                this.ball.getX() < this.paddle.getX() + paddleWidth
-            ) {
+        } else if (this.ballReachedBottom()) {
+            if (this.ballReachedPaddle()) {
                 this.ball.invertDeltaY();
             } else {
                 this.lives.descrease();
@@ -239,7 +215,9 @@ class BreakoutGame {
                         y: this.ctx.canvas.height - 30,
                     });
                     this.ball.setDelta({ x: 2, y: -2 });
-                    this.paddle.setX((this.ctx.canvas.width - paddleWidth) / 2);
+                    this.paddle.setX(
+                        (this.ctx.canvas.width - this.paddle.width) / 2
+                    );
                 }
             }
         }
@@ -253,6 +231,39 @@ class BreakoutGame {
         }
 
         this.ball.move();
+    }
+
+    private cleanCanvas() {
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    }
+
+    private ballReachedLeft(): boolean {
+        return this.ball.x + this.ball.deltaX < this.ball.radius;
+    }
+
+    private ballReachedRight(): boolean {
+        return (
+            this.ball.x + this.ball.deltaX >
+            this.ctx.canvas.width - this.ball.radius
+        );
+    }
+
+    private ballReachedTop(): boolean {
+        return this.ball.y + this.ball.deltaY < this.ball.radius;
+    }
+
+    private ballReachedBottom(): boolean {
+        return (
+            this.ball.y + this.ball.deltaY >
+            this.ctx.canvas.height - this.ball.radius
+        );
+    }
+
+    private ballReachedPaddle(): boolean {
+        return (
+            this.ball.x > this.paddle.x &&
+            this.ball.x < this.paddle.x + this.paddle.width
+        );
     }
 }
 

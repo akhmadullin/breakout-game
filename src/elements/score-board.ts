@@ -44,10 +44,6 @@ class ScoreBoard extends BaseElement {
     public descrease() {
         this.value -= 1;
     }
-
-    // public setValue(value: number) {
-    //     this.value = value;
-    // }
 }
 
 export default ScoreBoard;

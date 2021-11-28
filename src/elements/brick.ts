@@ -6,6 +6,11 @@ export enum BrickStatus {
     Broken,
 }
 
+type BrickOptions = Point &
+    Size & {
+        color: Color;
+    };
+
 class Brick extends BaseElement {
     private size: Size;
 
@@ -13,12 +18,10 @@ class Brick extends BaseElement {
 
     constructor(
         ctx: CanvasRenderingContext2D,
-        position: Point,
-        color: Color,
-        size: Size
+        { x, y, width, height, color }: BrickOptions
     ) {
-        super(ctx, position, color);
-        this.size = size;
+        super(ctx, { x, y }, color);
+        this.size = { width, height };
         this.status = BrickStatus.UnBroken;
     }
 
@@ -41,6 +44,14 @@ class Brick extends BaseElement {
 
     public destroy() {
         this.status = BrickStatus.Broken;
+    }
+
+    get width(): number {
+        return this.size.width;
+    }
+
+    get height(): number {
+        return this.size.height;
     }
 }
 

@@ -1,17 +1,24 @@
 import BaseMovableElement from './base-movable-element';
 import { Point, Color, Size } from '../types';
 
+type PaddleOptions = Point &
+    Size & {
+        shift: number;
+        color: Color;
+    };
+
 class Paddle extends BaseMovableElement {
     private size: Size;
 
+    private shift: number;
+
     constructor(
         ctx: CanvasRenderingContext2D,
-        position: Point,
-        color: Color,
-        size: Size
+        { x, y, width, height, shift, color }: PaddleOptions
     ) {
-        super(ctx, position, color);
-        this.size = size;
+        super(ctx, { x, y }, color);
+        this.size = { width, height };
+        this.shift = shift;
     }
 
     public draw() {
@@ -28,17 +35,27 @@ class Paddle extends BaseMovableElement {
     }
 
     public moveLeft() {
-        this.position.x -= this.delta.x;
+        this.position.x -= this.shift;
         if (this.position.x < 0) {
             this.position.x = 0;
         }
     }
 
     public moveRight() {
-        this.position.x += this.delta.x;
+        this.position.x += this.shift;
         if (this.position.x + this.size.width > this.ctx.canvas.width) {
             this.position.x = this.ctx.canvas.width - this.size.width;
         }
+    }
+
+    public moveByMouse(mouseX: number) {
+        if (mouseX > 0 && mouseX < this.ctx.canvas.width) {
+            this.setX(mouseX - this.width / 2);
+        }
+    }
+
+    get width(): number {
+        return this.size.width;
     }
 }
 

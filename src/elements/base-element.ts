@@ -15,11 +15,11 @@ abstract class BaseElement {
 
     public abstract draw(): void;
 
-    public getX(): number {
+    get x(): number {
         return this.position.x;
     }
 
-    public getY(): number {
+    get y(): number {
         return this.position.y;
     }
 }
