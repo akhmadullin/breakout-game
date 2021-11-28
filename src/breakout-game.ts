@@ -202,23 +202,21 @@ class BreakoutGame {
 
         if (this.ballReachedTop()) {
             this.ball.invertDeltaY();
+        } else if (this.ballReachedPaddle()) {
+            this.ball.invertDeltaY();
         } else if (this.ballReachedBottom()) {
-            if (this.ballReachedPaddle()) {
-                this.ball.invertDeltaY();
+            this.lives.descrease();
+            if (!this.lives.getValue()) {
+                this.status = GameStatus.GameOver;
             } else {
-                this.lives.descrease();
-                if (!this.lives.getValue()) {
-                    this.status = GameStatus.GameOver;
-                } else {
-                    this.ball.setPosition({
-                        x: this.ctx.canvas.width / 2,
-                        y: this.ctx.canvas.height - 30,
-                    });
-                    this.ball.setDelta({ x: 2, y: -2 });
-                    this.paddle.setX(
-                        (this.ctx.canvas.width - this.paddle.width) / 2
-                    );
-                }
+                this.ball.setPosition({
+                    x: this.ctx.canvas.width / 2,
+                    y: this.ctx.canvas.height - 30,
+                });
+                this.ball.setDelta({ x: 2, y: -2 });
+                this.paddle.setX(
+                    (this.ctx.canvas.width - this.paddle.width) / 2
+                );
             }
         }
 
@@ -261,8 +259,9 @@ class BreakoutGame {
 
     private ballReachedPaddle(): boolean {
         return (
-            this.ball.x > this.paddle.x &&
-            this.ball.x < this.paddle.x + this.paddle.width
+            this.ball.x >= this.paddle.x &&
+            this.ball.x <= this.paddle.x + this.paddle.width &&
+            this.ball.y >= this.paddle.y
         );
     }
 }
