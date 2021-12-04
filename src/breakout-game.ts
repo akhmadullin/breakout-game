@@ -1,12 +1,21 @@
 import Ball from './elements/ball';
 import Paddle from './elements/paddle';
-import Brick, { BrickStatus } from './elements/brick';
+import { BrickStatus } from './elements/brick';
 import Bricks from './elements/bricks';
 import ScoreBoard from './elements/score-board';
 import { Level } from './types';
-import { blue, font, paddleWidth, paddleHeight } from './constants';
+import {
+    blue,
+    font,
+    paddleWidth,
+    paddleHeight,
+    arrowRight,
+    arrowLeft,
+    space,
+} from './constants';
 
-enum GameStatus {
+export enum GameStatus {
+    Pause,
     Active,
     Win,
     GameOver,
@@ -29,13 +38,11 @@ class BreakoutGame {
 
     private lives: ScoreBoard;
 
-    private status: GameStatus;
+    public status: GameStatus;
 
     private isRightArrowPressed: boolean;
 
     private isLeftArrowPressed: boolean;
-
-    private isStopped: boolean;
 
     constructor(ctx: CanvasRenderingContext2D, levels: Level[]) {
         this.ctx = ctx;
@@ -88,12 +95,10 @@ class BreakoutGame {
 
         this.bricks = new Bricks(ctx, this.currentLevelOptions.bricks);
 
-        this.status = GameStatus.Active;
+        this.status = GameStatus.Pause;
 
         this.isRightArrowPressed = false;
         this.isLeftArrowPressed = false;
-
-        this.isStopped = false;
 
         this.activateControls();
     }
@@ -109,6 +114,7 @@ class BreakoutGame {
             this.level.increase();
             const levelOptions = this.currentLevelOptions;
             this.bricks = new Bricks(this.ctx, levelOptions.bricks);
+            this.pause();
             this.ball.setPosition({
                 x: this.ctx.canvas.width / 2,
                 y: this.ctx.canvas.height - 30,
@@ -123,23 +129,43 @@ class BreakoutGame {
 
     private activateControls() {
         const keyDownHandler = (e: KeyboardEvent) => {
-            if (e.key === 'Right' || e.key === 'ArrowRight') {
+            if (e.keyCode === arrowRight) {
                 this.isRightArrowPressed = true;
-            } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+                if (this.status === GameStatus.Pause) {
+                    this.continue();
+                }
+            } else if (e.keyCode === arrowLeft) {
                 this.isLeftArrowPressed = true;
+                if (this.status === GameStatus.Pause) {
+                    this.continue();
+                }
+            } else if (e.keyCode === space) {
+                if (this.status === GameStatus.Pause) {
+                    this.continue();
+                } else if (this.status === GameStatus.Active) {
+                    this.pause();
+                }
             }
         };
 
         const keyUpHandler = (e: KeyboardEvent) => {
-            if (e.key === 'Right' || e.key === 'ArrowRight') {
+            if (e.keyCode === arrowRight) {
                 this.isRightArrowPressed = false;
-            } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+            } else if (e.keyCode === arrowLeft) {
                 this.isLeftArrowPressed = false;
             }
         };
 
         document.addEventListener('keydown', keyDownHandler);
         document.addEventListener('keyup', keyUpHandler);
+    }
+
+    private pause() {
+        this.status = GameStatus.Pause;
+    }
+
+    private continue() {
+        this.status = GameStatus.Active;
     }
 
     private collisionDetection = () => {
@@ -169,10 +195,6 @@ class BreakoutGame {
     };
 
     public draw() {
-        if (this.isStopped) {
-            return;
-        }
-
         this.cleanCanvas();
 
         this.bricks.draw();
@@ -182,17 +204,7 @@ class BreakoutGame {
         this.level.draw();
         this.lives.draw();
 
-        if (this.status === GameStatus.Win) {
-            alert('YOU WIN, CONGRATULATIONS!');
-            this.isStopped = true;
-            document.location.reload();
-            return;
-        }
-
-        if (this.status === GameStatus.GameOver) {
-            alert('GAME OVER');
-            this.isStopped = true;
-            document.location.reload();
+        if (this.status === GameStatus.Pause) {
             return;
         }
 
@@ -211,6 +223,7 @@ class BreakoutGame {
             if (!this.lives.getValue()) {
                 this.status = GameStatus.GameOver;
             } else {
+                this.pause();
                 this.ball.setPosition({
                     x: this.ctx.canvas.width / 2,
                     y: this.ctx.canvas.height - 30,
