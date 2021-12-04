@@ -48,12 +48,6 @@ class Paddle extends BaseMovableElement {
         }
     }
 
-    public moveByMouse(mouseX: number) {
-        if (mouseX > 0 && mouseX < this.ctx.canvas.width) {
-            this.setX(mouseX - this.width / 2);
-        }
-    }
-
     get width(): number {
         return this.size.width;
     }

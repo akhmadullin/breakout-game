@@ -140,13 +140,6 @@ class BreakoutGame {
 
         document.addEventListener('keydown', keyDownHandler);
         document.addEventListener('keyup', keyUpHandler);
-
-        const mouseMoveHandler = (e: MouseEvent) => {
-            const relativeX = e.clientX - this.ctx.canvas.offsetLeft;
-            this.paddle.moveByMouse(relativeX);
-        };
-
-        document.addEventListener('mousemove', mouseMoveHandler);
     }
 
     private collisionDetection = () => {
