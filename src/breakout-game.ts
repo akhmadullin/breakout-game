@@ -3,17 +3,8 @@ import Paddle from './elements/paddle';
 import Brick, { BrickStatus } from './elements/brick';
 import Bricks from './elements/bricks';
 import ScoreBoard from './elements/score-board';
-import { blue, font } from './constants';
-
-const brickRowCount = 3;
-const brickColumnCount = 5;
-const brickWidth = 75;
-const brickHeight = 20;
-const brickPadding = 10;
-const brickOffsetTop = 30;
-const brickOffsetLeft = 30;
-
-const paddleWidth = 75;
+import { Level } from './types';
+import { blue, font, paddleWidth, paddleHeight } from './constants';
 
 enum GameStatus {
     Active,
@@ -24,6 +15,8 @@ enum GameStatus {
 class BreakoutGame {
     private ctx: CanvasRenderingContext2D;
 
+    private levels: Level[];
+
     private ball: Ball;
 
     private paddle: Paddle;
@@ -31,6 +24,8 @@ class BreakoutGame {
     private bricks: Bricks;
 
     private score: ScoreBoard;
+
+    private level: ScoreBoard;
 
     private lives: ScoreBoard;
 
@@ -42,46 +37,9 @@ class BreakoutGame {
 
     private isStopped: boolean;
 
-    constructor(ctx: CanvasRenderingContext2D) {
+    constructor(ctx: CanvasRenderingContext2D, levels: Level[]) {
         this.ctx = ctx;
-
-        this.ball = new Ball(ctx, {
-            x: ctx.canvas.width / 2,
-            y: ctx.canvas.height - 30,
-            deltaX: 2,
-            deltaY: -2,
-            color: blue,
-            radius: 10,
-        });
-
-        this.paddle = new Paddle(ctx, {
-            x: (ctx.canvas.width - paddleWidth) / 2,
-            y: ctx.canvas.height - 10,
-            width: paddleWidth,
-            height: 10,
-            shift: 7,
-            color: blue,
-        });
-        //
-        const bricks: Brick[][] = [];
-        for (let c = 0; c < brickColumnCount; c++) {
-            bricks[c] = [];
-            for (let r = 0; r < brickRowCount; r++) {
-                const brickX =
-                    c * (brickWidth + brickPadding) + brickOffsetLeft;
-                const brickY =
-                    r * (brickHeight + brickPadding) + brickOffsetTop;
-                bricks[c][r] = new Brick(ctx, {
-                    x: brickX,
-                    y: brickY,
-                    width: brickWidth,
-                    height: brickHeight,
-                    color: blue,
-                });
-            }
-        }
-        this.bricks = new Bricks(bricks);
-        //
+        this.levels = levels;
 
         this.score = new ScoreBoard(
             ctx,
@@ -90,6 +48,15 @@ class BreakoutGame {
             font,
             'Score',
             0
+        );
+
+        this.level = new ScoreBoard(
+            ctx,
+            { x: ctx.canvas.width / 2 - 25, y: 20 },
+            blue,
+            font,
+            'Level',
+            1
         );
 
         this.lives = new ScoreBoard(
@@ -101,6 +68,26 @@ class BreakoutGame {
             3
         );
 
+        this.ball = new Ball(ctx, {
+            x: ctx.canvas.width / 2,
+            y: ctx.canvas.height - 30,
+            deltaX: this.currentLevelOptions.ballSpeed,
+            deltaY: -this.currentLevelOptions.ballSpeed,
+            color: blue,
+            radius: 10,
+        });
+
+        this.paddle = new Paddle(ctx, {
+            x: (ctx.canvas.width - paddleWidth) / 2,
+            y: ctx.canvas.height - paddleHeight,
+            width: paddleWidth,
+            height: paddleHeight,
+            shift: 7,
+            color: blue,
+        });
+
+        this.bricks = new Bricks(ctx, this.currentLevelOptions.bricks);
+
         this.status = GameStatus.Active;
 
         this.isRightArrowPressed = false;
@@ -109,6 +96,29 @@ class BreakoutGame {
         this.isStopped = false;
 
         this.activateControls();
+    }
+
+    private get currentLevelOptions() {
+        return this.levels[this.level.getValue() - 1];
+    }
+
+    private upLevel() {
+        if (this.level.getValue() === this.levels.length) {
+            this.status = GameStatus.Win;
+        } else {
+            this.level.increase();
+            const levelOptions = this.currentLevelOptions;
+            this.bricks = new Bricks(this.ctx, levelOptions.bricks);
+            this.ball.setPosition({
+                x: this.ctx.canvas.width / 2,
+                y: this.ctx.canvas.height - 30,
+            });
+            this.ball.setDelta({
+                x: levelOptions.ballSpeed,
+                y: -levelOptions.ballSpeed,
+            });
+            this.paddle.setX((this.ctx.canvas.width - this.paddle.width) / 2);
+        }
     }
 
     private activateControls() {
@@ -141,27 +151,25 @@ class BreakoutGame {
 
     private collisionDetection = () => {
         const bricks = this.bricks.getItems();
-        for (let c = 0; c < bricks.length; c++) {
-            for (let r = 0; r < bricks[0].length; r++) {
-                const brick = bricks[c][r];
+        for (let idx = 0; idx < bricks.length; idx++) {
+            const brick = bricks[idx];
 
-                if (brick.getStatus() === BrickStatus.Broken) {
-                    continue;
-                }
+            if (brick.getStatus() === BrickStatus.Broken) {
+                continue;
+            }
 
-                if (
-                    this.ball.x > brick.x &&
-                    this.ball.x < brick.x + brick.width &&
-                    this.ball.y > brick.y &&
-                    this.ball.y < brick.y + brick.height
-                ) {
-                    this.ball.invertDeltaY();
-                    brick.destroy();
-                    this.score.increase();
+            if (
+                this.ball.x > brick.x &&
+                this.ball.x < brick.x + brick.width &&
+                this.ball.y > brick.y &&
+                this.ball.y < brick.y + brick.height
+            ) {
+                this.ball.invertDeltaY();
+                brick.destroy();
+                this.score.increase();
 
-                    if (this.score.getValue() === this.bricks.amount) {
-                        this.status = GameStatus.Win;
-                    }
+                if (this.bricks.allBroken()) {
+                    this.upLevel();
                 }
             }
         }
@@ -174,10 +182,11 @@ class BreakoutGame {
 
         this.cleanCanvas();
 
+        this.bricks.draw();
         this.ball.draw();
         this.paddle.draw();
-        this.bricks.draw();
         this.score.draw();
+        this.level.draw();
         this.lives.draw();
 
         if (this.status === GameStatus.Win) {
@@ -213,7 +222,10 @@ class BreakoutGame {
                     x: this.ctx.canvas.width / 2,
                     y: this.ctx.canvas.height - 30,
                 });
-                this.ball.setDelta({ x: 2, y: -2 });
+                this.ball.setDelta({
+                    x: this.currentLevelOptions.ballSpeed,
+                    y: -this.currentLevelOptions.ballSpeed,
+                });
                 this.paddle.setX(
                     (this.ctx.canvas.width - this.paddle.width) / 2
                 );

@@ -6,7 +6,7 @@ export enum BrickStatus {
     Broken,
 }
 
-type BrickOptions = Point &
+export type BrickOptions = Point &
     Size & {
         color: Color;
     };
