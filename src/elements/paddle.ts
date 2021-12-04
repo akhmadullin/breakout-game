@@ -51,6 +51,10 @@ class Paddle extends BaseMovableElement {
     get width(): number {
         return this.size.width;
     }
+
+    get height(): number {
+        return this.size.height;
+    }
 }
 
 export default Paddle;

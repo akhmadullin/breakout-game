@@ -4,6 +4,7 @@ import { BrickStatus } from './elements/brick';
 import Bricks from './elements/bricks';
 import ScoreBoard from './elements/score-board';
 import { Level } from './types';
+import circleRectangleColliding from './circle-rectangle-colliding';
 import {
     blue,
     font,
@@ -168,7 +169,7 @@ class BreakoutGame {
         this.status = GameStatus.Active;
     }
 
-    private collisionDetection = () => {
+    private collisionDetection() {
         const bricks = this.bricks.getItems();
         for (let idx = 0; idx < bricks.length; idx++) {
             const brick = bricks[idx];
@@ -177,12 +178,7 @@ class BreakoutGame {
                 continue;
             }
 
-            if (
-                this.ball.x > brick.x &&
-                this.ball.x < brick.x + brick.width &&
-                this.ball.y > brick.y &&
-                this.ball.y < brick.y + brick.height
-            ) {
+            if (circleRectangleColliding(this.ball, brick)) {
                 this.ball.invertDeltaY();
                 brick.destroy();
                 this.score.increase();
@@ -192,7 +188,7 @@ class BreakoutGame {
                 }
             }
         }
-    };
+    }
 
     public draw() {
         this.cleanCanvas();
@@ -276,11 +272,7 @@ class BreakoutGame {
     }
 
     private ballReachedPaddle(): boolean {
-        return (
-            this.ball.x >= this.paddle.x &&
-            this.ball.x <= this.paddle.x + this.paddle.width &&
-            this.ball.y >= this.paddle.y
-        );
+        return circleRectangleColliding(this.ball, this.paddle);
     }
 }
 
