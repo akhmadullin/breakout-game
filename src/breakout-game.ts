@@ -173,7 +173,9 @@ class BreakoutGame {
     }
 
     private detectBallCollisionWithBricks() {
+        let shouldChangeBallDirection = false;
         const bricks = this.bricks.getItems();
+
         for (let idx = 0; idx < bricks.length; idx++) {
             const brick = bricks[idx];
 
@@ -182,7 +184,7 @@ class BreakoutGame {
             }
 
             if (circleRectangleColliding(this.ball, brick)) {
-                this.ball.invertDeltaY();
+                shouldChangeBallDirection = true;
                 brick.destroy();
                 this.score.increase();
 
@@ -190,6 +192,10 @@ class BreakoutGame {
                     this.upLevel();
                 }
             }
+        }
+
+        if (shouldChangeBallDirection) {
+            this.ball.invertDeltaY();
         }
     }
 
