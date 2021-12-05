@@ -187,15 +187,15 @@ class BreakoutGame {
                 shouldChangeBallDirection = true;
                 brick.destroy();
                 this.score.increase();
-
-                if (this.bricks.allBroken()) {
-                    this.upLevel();
-                }
             }
         }
 
         if (shouldChangeBallDirection) {
             this.ball.invertDeltaY();
+        }
+
+        if (this.bricks.allBroken()) {
+            this.upLevel();
         }
     }
 
