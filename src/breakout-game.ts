@@ -102,28 +102,6 @@ class BreakoutGame {
         return this.levels[this.level.getValue() - 1];
     }
 
-    private upLevel() {
-        if (this.level.getValue() === this.levels.length) {
-            this.status = GameStatus.Win;
-        } else {
-            this.level.increase();
-            const levelOptions = this.currentLevelOptions;
-            this.bricks = new Bricks(this.ctx, levelOptions.bricks);
-            this.pause();
-            this.ball.setPosition({
-                x: this.ctx.canvas.width / 2,
-                y: this.ctx.canvas.height - 30,
-            });
-            this.ball.setDelta({
-                x: levelOptions.ballSpeed,
-                y: -levelOptions.ballSpeed,
-            });
-            this.paddle.setSize(levelOptions.paddleSize);
-            this.paddle.setX((this.ctx.canvas.width - this.paddle.width) / 2);
-            this.paddle.setShift(levelOptions.paddleSpeed);
-        }
-    }
-
     private activateControls() {
         const keyDownHandler = (e: KeyboardEvent) => {
             if (e.keyCode === arrowRight) {
@@ -165,7 +143,36 @@ class BreakoutGame {
         this.status = GameStatus.Active;
     }
 
-    private collisionDetection() {
+    public play() {
+        this.cleanCanvas();
+
+        this.draw();
+
+        if (this.status === GameStatus.Pause) {
+            return;
+        }
+
+        this.detectBallCollisionWithBricks();
+
+        this.detectBallCollistionWithPaddleAndBorders();
+
+        this.moveElements();
+    }
+
+    private cleanCanvas() {
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    }
+
+    private draw() {
+        this.bricks.draw();
+        this.ball.draw();
+        this.paddle.draw();
+        this.score.draw();
+        this.level.draw();
+        this.lives.draw();
+    }
+
+    private detectBallCollisionWithBricks() {
         const bricks = this.bricks.getItems();
         for (let idx = 0; idx < bricks.length; idx++) {
             const brick = bricks[idx];
@@ -186,63 +193,36 @@ class BreakoutGame {
         }
     }
 
-    public draw() {
-        this.cleanCanvas();
+    private upLevel() {
+        if (this.level.getValue() === this.levels.length) {
+            this.status = GameStatus.Win;
+        } else {
+            this.level.increase();
 
-        this.bricks.draw();
-        this.ball.draw();
-        this.paddle.draw();
-        this.score.draw();
-        this.level.draw();
-        this.lives.draw();
+            this.bricks = new Bricks(this.ctx, this.currentLevelOptions.bricks);
 
-        if (this.status === GameStatus.Pause) {
-            return;
+            this.pause();
+
+            this.setBallToInitialPosition();
+
+            this.paddle.setSize(this.currentLevelOptions.paddleSize);
+            this.paddle.setShift(this.currentLevelOptions.paddleSpeed);
+            this.setPaddleToInitialPosition();
         }
+    }
 
-        this.collisionDetection();
-
+    private detectBallCollistionWithPaddleAndBorders() {
         if (this.ballReachedLeft() || this.ballReachedRight()) {
             this.ball.invertDeltaX();
         }
 
-        if (this.ballReachedTop()) {
+        if (this.ballReachedTop() || this.ballReachedPaddle()) {
             this.ball.invertDeltaY();
-        } else if (this.ballReachedPaddle()) {
-            this.ball.invertDeltaY();
-        } else if (this.ballReachedBottom()) {
-            this.lives.descrease();
-            if (!this.lives.getValue()) {
-                this.status = GameStatus.GameOver;
-            } else {
-                this.pause();
-                this.ball.setPosition({
-                    x: this.ctx.canvas.width / 2,
-                    y: this.ctx.canvas.height - 30,
-                });
-                this.ball.setDelta({
-                    x: this.currentLevelOptions.ballSpeed,
-                    y: -this.currentLevelOptions.ballSpeed,
-                });
-                this.paddle.setX(
-                    (this.ctx.canvas.width - this.paddle.width) / 2
-                );
-            }
         }
 
-        if (this.isRightArrowPressed) {
-            this.paddle.moveRight();
+        if (this.ballReachedBottom()) {
+            this.attemptIsOver();
         }
-
-        if (this.isLeftArrowPressed) {
-            this.paddle.moveLeft();
-        }
-
-        this.ball.move();
-    }
-
-    private cleanCanvas() {
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
     private ballReachedLeft(): boolean {
@@ -269,6 +249,46 @@ class BreakoutGame {
 
     private ballReachedPaddle(): boolean {
         return circleRectangleColliding(this.ball, this.paddle);
+    }
+
+    private attemptIsOver() {
+        this.lives.descrease();
+        if (!this.lives.getValue()) {
+            this.status = GameStatus.GameOver;
+        } else {
+            this.pause();
+
+            this.setBallToInitialPosition();
+
+            this.setPaddleToInitialPosition();
+        }
+    }
+
+    private setBallToInitialPosition() {
+        this.ball.setPosition({
+            x: this.ctx.canvas.width / 2,
+            y: this.ctx.canvas.height - 30,
+        });
+        this.ball.setDelta({
+            x: this.currentLevelOptions.ballSpeed,
+            y: -this.currentLevelOptions.ballSpeed,
+        });
+    }
+
+    private setPaddleToInitialPosition() {
+        this.paddle.setX((this.ctx.canvas.width - this.paddle.width) / 2);
+    }
+
+    private moveElements() {
+        if (this.isRightArrowPressed) {
+            this.paddle.moveRight();
+        }
+
+        if (this.isLeftArrowPressed) {
+            this.paddle.moveLeft();
+        }
+
+        this.ball.move();
     }
 }
 

@@ -7,7 +7,7 @@ const ctx = canvas.getContext('2d')!;
 const game = new BreakoutGame(ctx, levels);
 
 const draw = () => {
-    game.draw();
+    game.play();
 
     if (game.status === GameStatus.Win) {
         alert('YOU WIN, CONGRATULATIONS!');
