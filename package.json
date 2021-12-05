@@ -1,6 +1,7 @@
 {
   "name": "breakout-game",
   "packageManager": "yarn@3.0.1",
+  "homepage": "https://akhmadullin.github.io/breakout-game",
   "source": "src/index.html",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
