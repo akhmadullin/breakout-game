@@ -14,5 +14,7 @@ export type Size = {
 
 export type Level = {
     ballSpeed: number;
+    paddleSpeed: number;
+    paddleSize: Size;
     bricks: BrickOptions[];
 };

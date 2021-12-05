@@ -5,15 +5,7 @@ import Bricks from './elements/bricks';
 import ScoreBoard from './elements/score-board';
 import { Level } from './types';
 import circleRectangleColliding from './circle-rectangle-colliding';
-import {
-    blue,
-    font,
-    paddleWidth,
-    paddleHeight,
-    arrowRight,
-    arrowLeft,
-    space,
-} from './constants';
+import { blue, font, arrowRight, arrowLeft, space } from './constants';
 
 export enum GameStatus {
     Pause,
@@ -86,11 +78,13 @@ class BreakoutGame {
         });
 
         this.paddle = new Paddle(ctx, {
-            x: (ctx.canvas.width - paddleWidth) / 2,
-            y: ctx.canvas.height - paddleHeight,
-            width: paddleWidth,
-            height: paddleHeight,
-            shift: 7,
+            x:
+                (ctx.canvas.width - this.currentLevelOptions.paddleSize.width) /
+                2,
+            y: ctx.canvas.height - this.currentLevelOptions.paddleSize.height,
+            width: this.currentLevelOptions.paddleSize.width,
+            height: this.currentLevelOptions.paddleSize.height,
+            shift: this.currentLevelOptions.paddleSpeed,
             color: blue,
         });
 
@@ -124,7 +118,9 @@ class BreakoutGame {
                 x: levelOptions.ballSpeed,
                 y: -levelOptions.ballSpeed,
             });
+            this.paddle.setSize(levelOptions.paddleSize);
             this.paddle.setX((this.ctx.canvas.width - this.paddle.width) / 2);
+            this.paddle.setShift(levelOptions.paddleSpeed);
         }
     }
 

@@ -48,6 +48,14 @@ class Paddle extends BaseMovableElement {
         }
     }
 
+    public setShift(shift: number) {
+        this.shift = shift;
+    }
+
+    public setSize(size: Size) {
+        this.size = size;
+    }
+
     get width(): number {
         return this.size.width;
     }

@@ -3,6 +3,11 @@ import { Level } from '../types';
 
 const firstLevel: Level = {
     ballSpeed: 2,
+    paddleSpeed: 7,
+    paddleSize: {
+        width: 75,
+        height: 15,
+    },
     bricks: [
         {
             x: 30,
