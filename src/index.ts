@@ -1,7 +1,7 @@
 import BreakoutGame, { GameStatus } from './breakout-game';
 import levels from './levels';
 
-const canvas = document.querySelector<HTMLCanvasElement>('#myCanvas')!;
+const canvas = document.querySelector<HTMLCanvasElement>('#gameCanvas')!;
 const ctx = canvas.getContext('2d')!;
 
 const game = new BreakoutGame(ctx, levels);
