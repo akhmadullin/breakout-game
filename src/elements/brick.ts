@@ -1,5 +1,5 @@
 import BaseElement from './base-element';
-import { Point, Color, Size } from '../types';
+import { Point, Size } from '../types';
 
 export enum BrickStatus {
     UnBroken,
@@ -8,7 +8,7 @@ export enum BrickStatus {
 
 export type BrickOptions = Point &
     Size & {
-        color: Color;
+        color: string;
     };
 
 class Brick extends BaseElement {

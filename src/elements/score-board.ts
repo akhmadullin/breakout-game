@@ -1,5 +1,5 @@
 import BaseElement from './base-element';
-import { Point, Color } from '../types';
+import { Point } from '../types';
 
 class ScoreBoard extends BaseElement {
     private font: string;
@@ -11,7 +11,7 @@ class ScoreBoard extends BaseElement {
     constructor(
         ctx: CanvasRenderingContext2D,
         position: Point,
-        color: Color,
+        color: string,
         font: string,
         label: string,
         value: number

@@ -1,13 +1,13 @@
-import { Point, Color } from '../types';
+import { Point } from '../types';
 
 abstract class BaseElement {
     protected ctx: CanvasRenderingContext2D;
 
     protected position: Point;
 
-    protected color: Color;
+    protected color: string;
 
-    constructor(ctx: CanvasRenderingContext2D, position: Point, color: Color) {
+    constructor(ctx: CanvasRenderingContext2D, position: Point, color: string) {
         this.ctx = ctx;
         this.position = position;
         this.color = color;

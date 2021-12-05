@@ -1,11 +1,11 @@
 import BaseMovableElement from './base-movable-element';
 import { gameWidth } from '../constants';
-import { Point, Color, Size } from '../types';
+import { Point, Size } from '../types';
 
 type PaddleOptions = Point &
     Size & {
         shift: number;
-        color: Color;
+        color: string;
     };
 
 class Paddle extends BaseMovableElement {

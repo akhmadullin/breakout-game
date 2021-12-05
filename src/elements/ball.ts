@@ -1,12 +1,12 @@
 import BaseMovableElement from './base-movable-element';
-import { Point, Color } from '../types';
+import { Point } from '../types';
 
 type BallOptions = {
     x: number;
     y: number;
     deltaX: number;
     deltaY: number;
-    color: Color;
+    color: string;
     radius: number;
 };
 
