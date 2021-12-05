@@ -28,4 +28,6 @@
 
 .game-field { 
     background: #eee;
+    width: 480px;
+    height: 320px;
 }

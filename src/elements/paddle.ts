@@ -1,4 +1,5 @@
 import BaseMovableElement from './base-movable-element';
+import { gameWidth } from '../constants';
 import { Point, Color, Size } from '../types';
 
 type PaddleOptions = Point &
@@ -43,8 +44,8 @@ class Paddle extends BaseMovableElement {
 
     public moveRight() {
         this.position.x += this.shift;
-        if (this.position.x + this.size.width > this.ctx.canvas.width) {
-            this.position.x = this.ctx.canvas.width - this.size.width;
+        if (this.position.x + this.size.width > gameWidth) {
+            this.position.x = gameWidth - this.size.width;
         }
     }
 

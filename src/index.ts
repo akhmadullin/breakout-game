@@ -4,7 +4,9 @@ import levels from './levels';
 const canvas = document.querySelector<HTMLCanvasElement>('#gameCanvas')!;
 const ctx = canvas.getContext('2d')!;
 
-const game = new BreakoutGame(ctx, levels);
+const scaleIndex = window.devicePixelRatio;
+
+const game = new BreakoutGame(ctx, scaleIndex, levels);
 
 const draw = () => {
     game.play();

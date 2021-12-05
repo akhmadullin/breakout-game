@@ -5,7 +5,15 @@ import Bricks from './elements/bricks';
 import ScoreBoard from './elements/score-board';
 import { Level } from './types';
 import circleRectangleColliding from './circle-rectangle-colliding';
-import { blue, font, arrowRight, arrowLeft, space } from './constants';
+import {
+    blue,
+    font,
+    arrowRight,
+    arrowLeft,
+    space,
+    gameWidth,
+    gameHeight,
+} from './constants';
 
 export enum GameStatus {
     Pause,
@@ -16,6 +24,8 @@ export enum GameStatus {
 
 class BreakoutGame {
     private ctx: CanvasRenderingContext2D;
+
+    private scaleIndex: number;
 
     private levels: Level[];
 
@@ -37,9 +47,16 @@ class BreakoutGame {
 
     private isLeftArrowPressed: boolean;
 
-    constructor(ctx: CanvasRenderingContext2D, levels: Level[]) {
+    constructor(
+        ctx: CanvasRenderingContext2D,
+        scaleIndex: number,
+        levels: Level[]
+    ) {
         this.ctx = ctx;
+        this.scaleIndex = scaleIndex;
         this.levels = levels;
+
+        this.scaleCanvas();
 
         this.score = new ScoreBoard(
             ctx,
@@ -52,7 +69,7 @@ class BreakoutGame {
 
         this.level = new ScoreBoard(
             ctx,
-            { x: ctx.canvas.width / 2 - 25, y: 20 },
+            { x: this.width / 2 - 25, y: 20 },
             blue,
             font,
             'Level',
@@ -61,7 +78,7 @@ class BreakoutGame {
 
         this.lives = new ScoreBoard(
             ctx,
-            { x: ctx.canvas.width - 65, y: 20 },
+            { x: this.width - 65, y: 20 },
             blue,
             font,
             'Lives',
@@ -69,8 +86,8 @@ class BreakoutGame {
         );
 
         this.ball = new Ball(ctx, {
-            x: ctx.canvas.width / 2,
-            y: ctx.canvas.height - 30,
+            x: this.width / 2,
+            y: this.height - 30,
             deltaX: this.currentLevelOptions.ballSpeed,
             deltaY: -this.currentLevelOptions.ballSpeed,
             color: blue,
@@ -78,10 +95,8 @@ class BreakoutGame {
         });
 
         this.paddle = new Paddle(ctx, {
-            x:
-                (ctx.canvas.width - this.currentLevelOptions.paddleSize.width) /
-                2,
-            y: ctx.canvas.height - this.currentLevelOptions.paddleSize.height,
+            x: (this.width - this.currentLevelOptions.paddleSize.width) / 2,
+            y: this.height - this.currentLevelOptions.paddleSize.height,
             width: this.currentLevelOptions.paddleSize.width,
             height: this.currentLevelOptions.paddleSize.height,
             shift: this.currentLevelOptions.paddleSpeed,
@@ -98,8 +113,29 @@ class BreakoutGame {
         this.activateControls();
     }
 
+    private scaleCanvas() {
+        this.ctx.canvas.width = gameWidth * this.scaleIndex;
+        this.ctx.canvas.height = gameHeight * this.scaleIndex;
+
+        this.ctx.canvas.setAttribute(
+            'style',
+            `width: ${gameWidth}px; height: ${gameHeight};`
+        );
+
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(this.scaleIndex, this.scaleIndex);
+    }
+
     private get currentLevelOptions() {
         return this.levels[this.level.getValue() - 1];
+    }
+
+    private get width() {
+        return this.ctx.canvas.width / this.scaleIndex;
+    }
+
+    private get height() {
+        return this.ctx.canvas.height / this.scaleIndex;
     }
 
     private activateControls() {
@@ -236,10 +272,7 @@ class BreakoutGame {
     }
 
     private ballReachedRight(): boolean {
-        return (
-            this.ball.x + this.ball.deltaX >
-            this.ctx.canvas.width - this.ball.radius
-        );
+        return this.ball.x + this.ball.deltaX > this.width - this.ball.radius;
     }
 
     private ballReachedTop(): boolean {
@@ -247,10 +280,7 @@ class BreakoutGame {
     }
 
     private ballReachedBottom(): boolean {
-        return (
-            this.ball.y + this.ball.deltaY >
-            this.ctx.canvas.height - this.ball.radius
-        );
+        return this.ball.y + this.ball.deltaY > this.height - this.ball.radius;
     }
 
     private ballReachedPaddle(): boolean {
@@ -272,8 +302,8 @@ class BreakoutGame {
 
     private setBallToInitialPosition() {
         this.ball.setPosition({
-            x: this.ctx.canvas.width / 2,
-            y: this.ctx.canvas.height - 30,
+            x: this.width / 2,
+            y: this.height - 30,
         });
         this.ball.setDelta({
             x: this.currentLevelOptions.ballSpeed,
@@ -282,7 +312,7 @@ class BreakoutGame {
     }
 
     private setPaddleToInitialPosition() {
-        this.paddle.setX((this.ctx.canvas.width - this.paddle.width) / 2);
+        this.paddle.setX((this.width - this.paddle.width) / 2);
     }
 
     private moveElements() {
