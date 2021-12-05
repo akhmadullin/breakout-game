@@ -17,6 +17,7 @@ module.exports = {
         'no-shadow': 'off',
         'no-unused-vars': 'off',
         'no-continue': 'off',
+        'no-alert': 'off',
         'import/extensions': [
             'error',
             'ignorePackages',
